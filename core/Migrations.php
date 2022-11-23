@@ -10,7 +10,7 @@
  * Copyright (c) 2022 Colorbrace LLC. All rights reserved.
  */
 
-namespace app\core;
+namespace pennycodes\colormvc;
 use Exception;
 
 
@@ -118,9 +118,9 @@ class Migrations
     private function generateMigrationFileContent(string $tableName, array $columns): string
     {
         $fileContent = '<?php' . PHP_EOL;
-        $fileContent .= 'use app\core\Application;' . PHP_EOL;
-        $fileContent .= 'use app\core\Database;' . PHP_EOL;
-        $fileContent .= 'use app\core\Migration;' . PHP_EOL;
+        $fileContent .= 'use pennycodes\colormvc\Application;' . PHP_EOL;
+        $fileContent .= 'use pennycodes\colormvc\Database;' . PHP_EOL;
+        $fileContent .= 'use pennycodes\colormvc\Migration;' . PHP_EOL;
 
         $fileContent .= 'class ' . $tableName . ' extends Migration' . PHP_EOL;
         $fileContent .= '{' . PHP_EOL;

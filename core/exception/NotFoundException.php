@@ -10,7 +10,7 @@
  * Copyright (c) 2022 Colorbrace LLC. All rights reserved.
  */
 
-namespace app\core\exception;
+namespace pennycodes\colormvc\exception;
 
 class NotFoundException extends \Exception
 {

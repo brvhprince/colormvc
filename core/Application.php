@@ -11,14 +11,14 @@
  * Copyright (c) 2022 Colorbrace LLC. All rights reserved.
  */
 
-namespace app\core;
+namespace pennycodes\colormvc;
 
 use Dotenv\Dotenv;
 
 /**
  * app\Core
  * Application
- * @package app\core
+ * @package pennycodes\colormvc
  * @version 1.0.0
  * @since 1.0.0
  * @author pennycodes
@@ -61,7 +61,7 @@ class Application
         $this->session = new Session();
         $this->controller = new Controller();
         $this->view = new View();
-        $this->db = new Database();
+     //   $this->db = new Database();
 
         $this->router = new Router($this->request, $this->response);
 

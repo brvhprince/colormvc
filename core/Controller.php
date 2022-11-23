@@ -10,9 +10,9 @@
  * Copyright (c) 2022 Colorbrace LLC. All rights reserved.
  */
 
-namespace app\core;
+namespace pennycodes\colormvc;
 
-use app\core\middlewares\BaseMiddleware;
+use pennycodes\colormvc\middlewares\BaseMiddleware;
 
 class Controller
 {

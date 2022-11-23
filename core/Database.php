@@ -10,9 +10,10 @@
  * Copyright (c) 2022 Colorbrace LLC. All rights reserved.
  */
 
-namespace app\core;
+namespace pennycodes\colormvc;
 
 use Exception;
+use pennycodes\colormvc\exception\DBConnectionException;
 
 class Database
 {
@@ -30,9 +31,14 @@ class Database
         $dotenv->required('DB_PORT')->notEmpty();
         $dotenv->required('DB_PORT')->isInteger();
 
-        $mysqli = mysqli_connect($_ENV['DB_HOST'],$_ENV['DB_USER'],$_ENV['DB_PASS'],$_ENV['DB_NAME'],$_ENV['DB_PORT']);
-        $mysqli->set_charset('utf8mb4');
-        $this->db = new \MysqliDb($mysqli);
+        try {
+            $mysqli = mysqli_connect($_ENV['DB_HOST'],$_ENV['DB_USER'],$_ENV['DB_PASS'],$_ENV['DB_NAME'],$_ENV['DB_PORT']);
+            $mysqli->set_charset('utf8mb4');
+            $this->db = new \MysqliDb($mysqli);
+        }
+        catch (Exception $e) {
+            throw new DBConnectionException();
+        }
 
     }
 

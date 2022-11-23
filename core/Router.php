@@ -10,10 +10,10 @@
  * Copyright (c) 2022 Colorbrace LLC. All rights reserved.
  */
 
-namespace app\core;
+namespace pennycodes\colormvc;
 
-use app\core\enums\Extensions;
-use app\core\exception\NotFoundException;
+use pennycodes\colormvc\enums\Extensions;
+use pennycodes\colormvc\exception\NotFoundException;
 
 class Router
 {

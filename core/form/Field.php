@@ -10,9 +10,9 @@
  * Copyright (c) 2022 Colorbrace LLC. All rights reserved.
  */
 
-namespace app\core\form;
+namespace pennycodes\colormvc\form;
 
-use app\core\Model;
+use pennycodes\colormvc\Model;
 
 class Field
 {
