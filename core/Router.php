@@ -12,11 +12,15 @@
 
 namespace app\core;
 
+use app\core\enums\Extensions;
+
 class Router
 {
     public Request $request;
     public Response $response;
     protected array $routes = [];
+    private string $viewPath = 'views';
+    private string $viewExtension = '.php';
 
     public function __construct(Request $request, Response $response)
     {
@@ -24,17 +28,37 @@ class Router
         $this->response = $response;
     }
 
+    /**
+     * Handles the get request
+     * get
+     * @param $path
+     * @param $callback
+     * @return void
+     */
     public function get($path, $callback): void
     {
         $this->routes['get'][$path] = $callback;
     }
 
     /**
-     * This method is used to resolve the request
-     * resolve
+     * Handles the post request
+     * post
+     * @param $path
+     * @param $callback
      * @return void
      */
-    public function resolve()
+    public function post($path, $callback): void
+    {
+        $this->routes['post'][$path] = $callback;
+    }
+
+
+    /**
+     * This method is used to resolve the request
+     * resolve
+     * @return mixed
+     */
+    public function resolve(): mixed
     {
         /**
          * Get the path from the request
@@ -44,7 +68,7 @@ class Router
         /**
          * Get the method from the request
          */
-        $method = $this->request->getMethod();
+         $method = $this->request->method();
 
         /**
          * Get the callback from the routes
@@ -58,8 +82,62 @@ class Router
         if ($callback === false) {
             $this->response->setStatusCode(404);
             echo $this->renderView('_404');
-            exit;
+
         }
+
+        if (is_string($callback)) {
+            return $this->renderView($callback);
+        }
+
+        if (is_array($callback)) {
+            /**
+             * @var $controller Controller
+             */
+            $controller = new $callback[0]();
+            Application::$app->controller = $controller;
+            $controller->action = $callback[1];
+            $callback[0] = $controller;
+            foreach ($controller->getMiddlewares() as $middleware) {
+                $middleware->execute();
+            }
+        }
+
+        return call_user_func($callback, $this->request);
+    }
+
+    public function setViewPath(string $path): void
+    {
+        $this->viewPath = $path;
+    }
+
+    public function setViewExtension(string $extension): void
+    {
+        if (Extensions::isValidViewExtension($extension)) {
+            $this->viewExtension = $extension;
+        }
+        else {
+            throw new \RuntimeException('Invalid view extension');
+        }
+
+    }
+
+
+    public function renderView(string $view, array $params = []): string
+    {
+        foreach ($params as $key => $value) {
+            $$key = $value;
+        }
+
+        if (file_exists(Application::$ROOT_DIR . "/{$this->viewPath}/{$view}.{$this->viewExtension}")) {
+            ob_start();
+            include_once Application::$ROOT_DIR . "/{$this->viewPath}/{$view}.{$this->viewExtension}";
+            return ob_get_clean();
+        }
+
+        else {
+            throw new \RuntimeException("View {$view} does not exist");
+        }
+
     }
 
 }

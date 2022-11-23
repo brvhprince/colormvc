@@ -25,19 +25,48 @@ namespace app\core;
  * This class is the main class of the application
  */
 
+
 class Application
 {
-
+    public static string $ROOT_DIR;
     public Router $router;
+    public Request $request;
+    public Response $response;
+    public static Application $app;
 
     public function __construct()
     {
-        $this->router = new Router();
+
+        if (!defined('ROOT_DIR')) {
+            define("ROOT_DIR", dirname(__DIR__));
+        }
+
+
+        self::$app = $this;
+
+        self::$ROOT_DIR = ROOT_DIR;
+        $this->request = new Request();
+        $this->response = new Response();
+
+        $this->router = new Router($this->request, $this->response);
+
+
     }
 
-    public function run()
+    public function setViews(string $path): void
     {
-        $this->router->resolve();
+        $this->router->setViewPath($path);
+    }
+
+    public function setViewExtension(string $extension): void
+    {
+        $this->router->setViewExtension($extension);
+    }
+
+
+    public function run(): void
+    {
+       echo  $this->router->resolve();
     }
 
 }
