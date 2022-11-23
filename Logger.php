@@ -10,7 +10,7 @@
  * Copyright (c) 2022 Colorbrace LLC. All rights reserved.
  */
 
-namespace app\core;
+namespace app;
 
 class Logger
 {

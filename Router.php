@@ -10,10 +10,9 @@
  * Copyright (c) 2022 Colorbrace LLC. All rights reserved.
  */
 
-namespace app\core;
+namespace app;
 
-use app\core\enums\Extensions;
-use app\core\exception\NotFoundException;
+use app\exception\NotFoundException;
 
 class Router
 {

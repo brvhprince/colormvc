@@ -10,9 +10,9 @@
  * Copyright (c) 2022 Colorbrace LLC. All rights reserved.
  */
 
-namespace app\core\form;
+namespace app\form;
 
-use app\core\Model;
+use app\Model;
 
 class Form
 {

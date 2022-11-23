@@ -10,7 +10,7 @@
  * Copyright (c) 2022 Colorbrace LLC. All rights reserved.
  */
 
-namespace app\core\exception;
+namespace app\exception;
 
 class ForbiddenException extends \Exception
 {
