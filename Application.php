@@ -11,7 +11,7 @@
  * Copyright (c) 2022 Colorbrace LLC. All rights reserved.
  */
 
-namespace app;
+namespace pennycodes\colormvc;
 
 use Dotenv\Dotenv;
 

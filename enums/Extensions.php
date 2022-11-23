@@ -10,7 +10,7 @@
  * Copyright (c) 2022 Colorbrace LLC. All rights reserved.
  */
 
-namespace app\enums;
+namespace pennycodes\colormvc\enums;
 
 abstract class Extensions
 {
