@@ -1,0 +1,19 @@
+{
+    "name": "pennycodes/colormvc",
+    "description": "Simple PHP MVC Framework",
+    "type": "project",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "app\\": "./"
+        }
+    },
+    "authors": [
+        {
+            "name": "Prince Takyi Akomea",
+            "email": "prince.akomea.stu@uenr.edu.gh"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {}
+}
