@@ -13,6 +13,8 @@
 
 namespace app\core;
 
+use Dotenv\Dotenv;
+
 /**
  * app\Core
  * Application
@@ -32,7 +34,12 @@ class Application
     public Router $router;
     public Request $request;
     public Response $response;
+    public Database $db;
+    public Session $session;
+    public Controller $controller;
+    public View $view;
     public static Application $app;
+    public static Dotenv $dotenv;
 
     public function __construct()
     {
@@ -41,12 +48,20 @@ class Application
             define("ROOT_DIR", dirname(__DIR__));
         }
 
+        $dotenv = Dotenv::createImmutable(ROOT_DIR);
+        $dotenv->safeLoad();
+
 
         self::$app = $this;
+        self::$dotenv = $dotenv;
 
         self::$ROOT_DIR = ROOT_DIR;
         $this->request = new Request();
         $this->response = new Response();
+        $this->session = new Session();
+        $this->controller = new Controller();
+        $this->view = new View();
+        $this->db = new Database();
 
         $this->router = new Router($this->request, $this->response);
 
@@ -55,18 +70,26 @@ class Application
 
     public function setViews(string $path): void
     {
-        $this->router->setViewPath($path);
+        $this->view->setViewPath($path);
     }
 
     public function setViewExtension(string $extension): void
     {
-        $this->router->setViewExtension($extension);
+        $this->view->setViewExtension($extension);
     }
 
 
     public function run(): void
     {
-       echo  $this->router->resolve();
+        try {
+            echo  $this->router->resolve();
+        }
+        catch (\Exception $e) {
+            $this->response->setStatusCode($e->getCode());
+//            echo $this->view->renderView('_error', [
+//                'exception' => $e
+//            ]);
+        }
     }
 
 }

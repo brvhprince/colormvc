@@ -57,77 +57,83 @@ abstract class Model
                     $ruleName = $rule[0];
                 }
                 if ($ruleName === self::RULE_REQUIRED && !$value) {
-                    $this->addError($attribute, self::RULE_REQUIRED);
+                    $this->addErrorForRule($attribute, self::RULE_REQUIRED);
                 }
                 if ($ruleName === self::RULE_EMAIL && !filter_var($value, FILTER_VALIDATE_EMAIL)) {
-                    $this->addError($attribute, self::RULE_EMAIL);
+                    $this->addErrorForRule($attribute, self::RULE_EMAIL);
                 }
                 if ($ruleName === self::RULE_MIN && strlen($value) < $rule['min']) {
-                    $this->addError($attribute, self::RULE_MIN, $rule);
+                    $this->addErrorForRule($attribute, self::RULE_MIN, $rule);
                 }
                 if ($ruleName === self::RULE_MAX && strlen($value) > $rule['max']) {
-                    $this->addError($attribute, self::RULE_MAX, $rule);
+                    $this->addErrorForRule($attribute, self::RULE_MAX, $rule);
                 }
                 if ($ruleName === self::RULE_MATCH && $value !== $this->{$rule['match']}) {
-                    $this->addError($attribute, self::RULE_MATCH, $rule);
+                    $this->addErrorForRule($attribute, self::RULE_MATCH, $rule);
                 }
                 if ($ruleName === self::RULE_UNIQUE) {
                     $className = $rule['class'];
                     $uniqueAttr = $rule['attribute'] ?? $attribute;
                     $tableName = $className::tableName();
-                    $statement = Application::$app->db->prepare("SELECT * FROM $tableName WHERE $uniqueAttr = :attr");
-                    $statement->bindValue(":attr", $value);
-                    $statement->execute();
-                    $record = $statement->fetchObject();
+                    $statement = Application::$app->db->getDb()->where($uniqueAttr, $value);
+                    try {
+                        $record = $statement->getOne($tableName);
+
+                    }
+                    catch (\Exception $e) {
+                        Logger::logException($e);
+
+                       $record = false;
+                    }
                     if ($record) {
-                        $this->addError($attribute, self::RULE_UNIQUE, ['field' => $attribute]);
+                        $this->addErrorForRule($attribute, self::RULE_UNIQUE, ['field' => $attribute]);
                     }
                 }
                 if ($ruleName === self::RULE_FILE) {
                     if (!isset($_FILES[$attribute])) {
-                        $this->addError($attribute, self::RULE_FILE);
+                        $this->addErrorForRule($attribute, self::RULE_FILE);
                     }
                 }
                 if ($ruleName === self::RULE_FILE_SIZE) {
                     if ($_FILES[$attribute]['size'] > $rule['size']) {
-                        $this->addError($attribute, self::RULE_FILE_SIZE, $rule);
+                        $this->addErrorForRule($attribute, self::RULE_FILE_SIZE, $rule);
                     }
                 }
                 if ($ruleName === self::RULE_FILE_TYPE) {
                     if ($rule['type'] === 'image') {
                         $fileType = mime_content_type($_FILES[$attribute]['tmp_name']);
                         if ($fileType === false || !in_array($fileType, $this->validImageTypes())) {
-                            $this->addError($attribute, self::RULE_FILE_TYPE, $rule);
+                            $this->addErrorForRule($attribute, self::RULE_FILE_TYPE, $rule);
                         }
                     }
                     else if ($rule['type'] === 'document') {
                         $fileType = mime_content_type($_FILES[$attribute]['tmp_name']);
                         if ($fileType === false || !in_array($fileType, $this->validDocumentTypes())) {
-                            $this->addError($attribute, self::RULE_FILE_TYPE, $rule);
+                            $this->addErrorForRule($attribute, self::RULE_FILE_TYPE, $rule);
                         }
                     }
                     else if ($rule['type'] === 'audio') {
                         $fileType = mime_content_type($_FILES[$attribute]['tmp_name']);
                         if ($fileType === false || !in_array($fileType, $this->validAudioTypes())) {
-                            $this->addError($attribute, self::RULE_FILE_TYPE, $rule);
+                            $this->addErrorForRule($attribute, self::RULE_FILE_TYPE, $rule);
                         }
                     }
                     else if ($rule['type'] === 'video') {
                         $fileType = mime_content_type($_FILES[$attribute]['tmp_name']);
                         if ($fileType === false || !in_array($fileType, $this->validVideoTypes())) {
-                            $this->addError($attribute, self::RULE_FILE_TYPE, $rule);
+                            $this->addErrorForRule($attribute, self::RULE_FILE_TYPE, $rule);
                         }
                     }
                     else if (is_string($rule['type'])) {
                         $fileType = mime_content_type($_FILES[$attribute]['tmp_name']);
                         if ($fileType === false || $fileType !== $rule['type']) {
-                            $this->addError($attribute, self::RULE_FILE_TYPE, $rule);
+                            $this->addErrorForRule($attribute, self::RULE_FILE_TYPE, $rule);
                         }
                     }
                     else if (is_array($rule['type'])) {
                         $fileType = mime_content_type($_FILES[$attribute]['tmp_name']);
                         if ($fileType === false || !in_array($fileType, $rule['type'])) {
-                            $this->addError($attribute, self::RULE_FILE_TYPE, $rule);
+                            $this->addErrorForRule($attribute, self::RULE_FILE_TYPE, $rule);
                         }
                     }
                 }
@@ -135,76 +141,76 @@ abstract class Model
                     if (is_string($rule['extension'])) {
                         $fileExtension = pathinfo($_FILES[$attribute]['name'], PATHINFO_EXTENSION);
                         if ($fileExtension !== $rule['extension']) {
-                            $this->addError($attribute, self::RULE_FILE_EXTENSION, $rule);
+                            $this->addErrorForRule($attribute, self::RULE_FILE_EXTENSION, $rule);
                         }
                     }
                     else if (is_array($rule['extension'])) {
                         $fileExtension = pathinfo($_FILES[$attribute]['name'], PATHINFO_EXTENSION);
                         if (!in_array($fileExtension, $rule['extension'])) {
-                            $this->addError($attribute, self::RULE_FILE_EXTENSION, $rule);
+                            $this->addErrorForRule($attribute, self::RULE_FILE_EXTENSION, $rule);
                         }
                     }
                 }
                 if ($ruleName === self::RULE_FILE_DIMENSIONS) {
                     $fileDimensions = getimagesize($_FILES[$attribute]['tmp_name']);
                     if ($fileDimensions === false || $fileDimensions[0] !== $rule['width'] || $fileDimensions[1] !== $rule['height']) {
-                        $this->addError($attribute, self::RULE_FILE_DIMENSIONS, $rule);
+                        $this->addErrorForRule($attribute, self::RULE_FILE_DIMENSIONS, $rule);
                     }
                 }
 
                 if ($ruleName === self::RULE_FILE_DIMENSIONS_MIN) {
                     $fileDimensions = getimagesize($_FILES[$attribute]['tmp_name']);
                     if ($fileDimensions === false || $fileDimensions[0] < $rule['width'] || $fileDimensions[1] < $rule['height']) {
-                        $this->addError($attribute, self::RULE_FILE_DIMENSIONS_MIN, $rule);
+                        $this->addErrorForRule($attribute, self::RULE_FILE_DIMENSIONS_MIN, $rule);
                     }
                 }
 
                 if ($ruleName === self::RULE_FILE_DIMENSIONS_MAX) {
                     $fileDimensions = getimagesize($_FILES[$attribute]['tmp_name']);
                     if ($fileDimensions === false || $fileDimensions[0] > $rule['width'] || $fileDimensions[1] > $rule['height']) {
-                        $this->addError($attribute, self::RULE_FILE_DIMENSIONS_MAX, $rule);
+                        $this->addErrorForRule($attribute, self::RULE_FILE_DIMENSIONS_MAX, $rule);
                     }
                 }
 
                 if ($ruleName === self::RULE_FILE_DIMENSIONS_WIDTH) {
                     $fileDimensions = getimagesize($_FILES[$attribute]['tmp_name']);
                     if ($fileDimensions === false || $fileDimensions[0] !== $rule['width']) {
-                        $this->addError($attribute, self::RULE_FILE_DIMENSIONS_WIDTH, $rule);
+                        $this->addErrorForRule($attribute, self::RULE_FILE_DIMENSIONS_WIDTH, $rule);
                     }
                 }
 
                 if ($ruleName === self::RULE_FILE_DIMENSIONS_WIDTH_MIN) {
                     $fileDimensions = getimagesize($_FILES[$attribute]['tmp_name']);
                     if ($fileDimensions === false || $fileDimensions[0] < $rule['width']) {
-                        $this->addError($attribute, self::RULE_FILE_DIMENSIONS_WIDTH_MIN, $rule);
+                        $this->addErrorForRule($attribute, self::RULE_FILE_DIMENSIONS_WIDTH_MIN, $rule);
                     }
                 }
 
                 if ($ruleName === self::RULE_FILE_DIMENSIONS_WIDTH_MAX) {
                     $fileDimensions = getimagesize($_FILES[$attribute]['tmp_name']);
                     if ($fileDimensions === false || $fileDimensions[0] > $rule['width']) {
-                        $this->addError($attribute, self::RULE_FILE_DIMENSIONS_WIDTH_MAX, $rule);
+                        $this->addErrorForRule($attribute, self::RULE_FILE_DIMENSIONS_WIDTH_MAX, $rule);
                     }
                 }
 
                 if ($ruleName === self::RULE_FILE_DIMENSIONS_HEIGHT) {
                     $fileDimensions = getimagesize($_FILES[$attribute]['tmp_name']);
                     if ($fileDimensions === false || $fileDimensions[1] !== $rule['height']) {
-                        $this->addError($attribute, self::RULE_FILE_DIMENSIONS_HEIGHT, $rule);
+                        $this->addErrorForRule($attribute, self::RULE_FILE_DIMENSIONS_HEIGHT, $rule);
                     }
                 }
 
                 if ($ruleName === self::RULE_FILE_DIMENSIONS_HEIGHT_MIN) {
                     $fileDimensions = getimagesize($_FILES[$attribute]['tmp_name']);
                     if ($fileDimensions === false || $fileDimensions[1] < $rule['height']) {
-                        $this->addError($attribute, self::RULE_FILE_DIMENSIONS_HEIGHT_MIN, $rule);
+                        $this->addErrorForRule($attribute, self::RULE_FILE_DIMENSIONS_HEIGHT_MIN, $rule);
                     }
                 }
 
                 if ($ruleName === self::RULE_FILE_DIMENSIONS_HEIGHT_MAX) {
                     $fileDimensions = getimagesize($_FILES[$attribute]['tmp_name']);
                     if ($fileDimensions === false || $fileDimensions[1] > $rule['height']) {
-                        $this->addError($attribute, self::RULE_FILE_DIMENSIONS_HEIGHT_MAX, $rule);
+                        $this->addErrorForRule($attribute, self::RULE_FILE_DIMENSIONS_HEIGHT_MAX, $rule);
                     }
                 }
 
@@ -285,12 +291,17 @@ abstract class Model
         ];
     }
 
-   public function addError(string $attribute, string $rule, $params = []): void
+   public function addErrorForRule(string $attribute, string $rule, $params = []): void
    {
         $message = $this->errorMessages()[$rule] ?? '';
         foreach ($params as $key => $value) {
             $message = str_replace("{{$key}}", $value, $message);
         }
+        $this->errors[$attribute][] = $message;
+    }
+
+    public function addError(string $attribute, string $message): void
+    {
         $this->errors[$attribute][] = $message;
     }
 

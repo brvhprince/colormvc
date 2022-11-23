@@ -13,14 +13,13 @@
 namespace app\core;
 
 use app\core\enums\Extensions;
+use app\core\exception\NotFoundException;
 
 class Router
 {
     public Request $request;
     public Response $response;
     protected array $routes = [];
-    private string $viewPath = 'views';
-    private string $viewExtension = '.php';
 
     public function __construct(Request $request, Response $response)
     {
@@ -57,6 +56,7 @@ class Router
      * This method is used to resolve the request
      * resolve
      * @return mixed
+     * @throws NotFoundException
      */
     public function resolve(): mixed
     {
@@ -81,12 +81,12 @@ class Router
          */
         if ($callback === false) {
             $this->response->setStatusCode(404);
-            echo $this->renderView('_404');
+           throw new NotFoundException();
 
         }
 
         if (is_string($callback)) {
-            return $this->renderView($callback);
+            return Application::$app->view->renderView($callback);
         }
 
         if (is_array($callback)) {
@@ -102,42 +102,9 @@ class Router
             }
         }
 
-        return call_user_func($callback, $this->request);
-    }
-
-    public function setViewPath(string $path): void
-    {
-        $this->viewPath = $path;
-    }
-
-    public function setViewExtension(string $extension): void
-    {
-        if (Extensions::isValidViewExtension($extension)) {
-            $this->viewExtension = $extension;
-        }
-        else {
-            throw new \RuntimeException('Invalid view extension');
-        }
-
+        return call_user_func($callback, $this->request, $this->response);
     }
 
 
-    public function renderView(string $view, array $params = []): string
-    {
-        foreach ($params as $key => $value) {
-            $$key = $value;
-        }
-
-        if (file_exists(Application::$ROOT_DIR . "/{$this->viewPath}/{$view}.{$this->viewExtension}")) {
-            ob_start();
-            include_once Application::$ROOT_DIR . "/{$this->viewPath}/{$view}.{$this->viewExtension}";
-            return ob_get_clean();
-        }
-
-        else {
-            throw new \RuntimeException("View {$view} does not exist");
-        }
-
-    }
 
 }
